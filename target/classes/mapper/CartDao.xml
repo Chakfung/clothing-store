@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.4//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaweb.clothingstore.dao.CartDao">
+    <resultMap id="cartMap" type="com.javaweb.clothingstore.entity.Cart">
+        <id column="cart_id" property="cartId"/>
+        <id column="num" property="num"/>
+        <association property="localAuth" column="user_id">
+            <id column="local_auth_id" property="localAuthId"/>
+            <result column="user_id" property="userId"/>
+            <result column="username" property="userName"/>
+        </association>
+        <association property="product" column="product_id">
+            <id column="product_id" property="productId"/>
+            <result column="product_name" property="productName"/>
+            <result column="img_addr" property="imgAddr"/>
+            <result column="normal_price" property="normalPrice"/>
+        </association>
+    </resultMap>
+
+    <insert id="insertCart" parameterType="com.javaweb.clothingstore.entity.Cart">
+        insert into
+        tb_cart(user_id,product_id,num)
+        values (
+        #{localAuth.personInfo.userId},
+        #{product.productId},
+        #{num}
+        )
+    </insert>
+
+    <select id="selectCartByUserId" resultMap="cartMap">
+        select
+        cr.*,
+        la.local_auth_id,
+        la.user_id,
+        la.username,
+        p.product_id,
+        p.product_name,
+        p.img_addr,
+        p.normal_price
+        from
+        tb_cart cr
+        left join tb_local_auth la
+        on cr.user_id=la.user_id
+        left join tb_product p
+        on cr.product_id=p.product_id
+        where cr.user_id=#{userId}
+    </select>
+
+    <select id="selectCartByUserIdAndProductId" resultMap="cartMap">
+        select
+        cr.*,
+        la.local_auth_id,
+        la.user_id,
+        la.username,
+        p.product_id,
+        p.product_name,
+        p.img_addr,
+        p.normal_price
+        from
+        tb_cart cr
+        left join tb_local_auth la
+        on cr.user_id=la.user_id
+        left join tb_product p
+        on cr.product_id=p.product_id
+        where
+        cr.user_id=#{userId}
+        and
+        cr.product_id=#{productId}
+    </select>
+
+    <update id="updateCart" parameterType="com.javaweb.clothingstore.entity.Cart">
+        update
+        tb_cart
+        set num=#{num}
+        where cart_id=#{cartId}
+    </update>
+
+    <delete id="deleteCartByid" parameterType="java.lang.Long">
+        delete from
+        tb_cart
+        where cart_id=#{cartId}
+    </delete>
+
+    <delete id="deleteCartByUserId" parameterType="java.lang.Long">
+        delete  from
+        tb_cart
+        where user_id=#{userId}
+    </delete>
+</mapper>

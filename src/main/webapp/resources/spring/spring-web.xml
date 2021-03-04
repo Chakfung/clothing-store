@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+	<context:component-scan base-package="com.javaweb.clothingstore.controller"/>
+	<mvc:annotation-driven/>
+	<mvc:resources mapping="/resources/**" location="/resources/"/>
+	<mvc:default-servlet-handler/>
+
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/local/**"/>
+			<mvc:exclude-mapping path="/local/to_login"/>
+			<mvc:exclude-mapping path="/local/login"/>
+			<mvc:exclude-mapping path="/local/to_regist"/>
+			<mvc:exclude-mapping path="/local/regist"/>
+			<bean id="LocalAuthLoginInterceptor"
+				  class="com.javaweb.clothingstore.interceptor.localauth.LocalAuthLoginInterceptor"/>
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/shopadmin/**"/>
+			<bean id="ShopInterceptor"
+				  class="com.javaweb.clothingstore.interceptor.shopadmin.ShopLoginInterceptor"/>
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/shopadmin/**"/>
+			<mvc:exclude-mapping path="/shopadmin/shoplist"/>
+			<mvc:exclude-mapping path="/shopadmin/getshoplist"/>
+			<mvc:exclude-mapping path="/shopadmin/getshopinitinfo"/>
+			<mvc:exclude-mapping path="/shopadmin/registershop"/>
+			<mvc:exclude-mapping path="/shopadmin/shopoperation"/>
+			<mvc:exclude-mapping path="/shopadmin/shopmanagement"/>
+			<mvc:exclude-mapping path="/shopadmin/getshopmanagementinfo"/>
+			<bean id="ShopPermissionInterceptor"
+				  class="com.javaweb.clothingstore.interceptor.shopadmin.ShopPermissionInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="utf-8"/>
+		<!--限制上传最大为20M-->
+		<property name="maxUploadSize" value="20971520"/>
+		<property name="maxInMemorySize" value="20971520"/>
+	</bean>
+</beans>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.4//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaweb.clothingstore.dao.OrderDao">
+    <resultMap id="orderMap" type="com.javaweb.clothingstore.entity.Order">
+        <id column="order_id" property="orderId"/>
+        <result column="count" property="count"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <association property="localAuth" column="user_id">
+            <id column="local_auth_id" property="localAuthId"/>
+            <result column="user_id" property="userId"/>
+            <result column="username" property="userName"/>
+        </association>
+        <association property="product" column="product_id">
+            <id column="product_id" property="productId"/>
+            <result column="product_name" property="productName"/>
+            <result column="img_addr" property="imgAddr"/>
+            <result column="normal_price" property="normalPrice"/>
+        </association>
+        <association property="shop" column="shop_id">
+            <id column="shop_id" property="shopId"/>
+            <result column="shop_name" property="shopName"/>
+        </association>
+    </resultMap>
+    
+    <insert id="batchInsertOrder" useGeneratedKeys="true" parameterType="java.util.List"
+            keyProperty="orderId" keyColumn="order_id">
+        insert into
+        tb_order(user_id,shop_id,product_id,count,status,create_time)
+        values
+        <foreach collection="list" item="o" index="index" separator=",">
+            (
+            #{o.localAuth.userId},
+            #{o.shop.shopId},
+            #{o.product.productId},
+            #{o.count},
+            #{o.status},
+            #{o.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateOrder" parameterType="com.javaweb.clothingstore.entity.Order" keyColumn="order_id" useGeneratedKeys="true">
+        update tb_order
+        <set>
+                <if test="status!=null">
+                    status=#{status}
+                </if>
+        </set>
+        where order_id=#{orderId}
+    </update>
+
+    <select id="selectOrderByUserId" resultMap="orderMap">
+        select
+        o.*,
+        la.local_auth_id,
+        la.user_id,
+        la.username,
+        p.product_id,
+        p.product_name,
+        p.img_addr,
+        p.normal_price,
+        s.shop_id,
+        s.shop_name
+        from
+        tb_order o
+        left join tb_local_auth la
+        on o.user_id=la.user_id
+        left join tb_shop s
+        on o.shop_id=s.shop_id
+        left join tb_product p
+        on o.product_id=p.product_id
+        where o.user_id=#{orderCondition.localAuth.userId}
+    </select>
+
+    <select id="selectOrderByShopId" resultMap="orderMap">
+       select
+        o.*,
+        la.local_auth_id,
+        la.user_id,
+        la.username,
+        p.product_id,
+        p.product_name,
+        p.img_addr,
+        p.normal_price,
+        s.shop_id,
+        s.shop_name
+        from
+        tb_order o
+        left join tb_local_auth la
+        on o.user_id=la.user_id
+        left join tb_shop s
+        on o.shop_id=s.shop_id
+        left join tb_product p
+        on o.product_id=p.product_id
+        <where>
+        <if test="orderCondition.status!=null">
+            and o.status=#{orderCondition.status}
+        </if>
+            and o.shop_id=#{orderCondition.shop.shopId}
+        </where>
+        order by
+        status asc
+        LIMIT #{rowIndex},#{pageSize};
+    </select>
+
+    <select id="CountOrderByShopId" resultType="java.lang.Integer">
+        select count(1)
+        from
+        tb_order
+        <where>
+            <if test="orderCondition.status!=null">
+                and status=#{orderCondition.status}
+            </if>
+            and shop_id=#{orderCondition.shop.shopId}
+        </where>
+    </select>
+
+    <select id="selectOrderByOrderId" resultMap="orderMap">
+        select
+        o.*,
+        la.local_auth_id,
+        la.user_id,
+        la.username,
+        p.product_id,
+        p.product_name,
+        p.img_addr,
+        p.normal_price,
+        s.shop_id,
+        s.shop_name
+        from
+        tb_order o
+        left join tb_local_auth la
+        on o.user_id=la.user_id
+        left join tb_shop s
+        on o.shop_id=s.shop_id
+        left join tb_product p
+        on o.product_id=p.product_id
+        where o.order_id=#{orderId};
+    </select>
+</mapper>

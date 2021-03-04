@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.4//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaweb.clothingstore.dao.AreaDao">
+    <select id="queryArea" resultType="com.javaweb.clothingstore.entity.Area">
+        select * from tb_area
+        order by priority desc
+    </select>
+
+    <insert id="batchInsertArea" parameterType="java.util.List" useGeneratedKeys="true">
+        insert into
+        tb_area(area_name,priority,create_time,last_edit_time)
+        values
+        <foreach collection="list" item="area" index="index" separator=",">
+            (#{area.areaName}
+            ,#{area.priority}
+            ,#{area.createTime}
+            ,#{area.lastEditTime}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteAreaById" parameterType="java.lang.Long">
+        delete from tb_area where area_id=#{areaId}
+    </delete>
+    
+    <update id="updateArea" parameterType="com.javaweb.clothingstore.entity.Area">
+        update tb_area
+        <set>
+            <if test="areaName!=null">
+                area_name=#{areaName}
+            </if>
+            <if test="priority!=null">
+                priority=#{priority}
+            </if>
+            <if test="lastEditTime!=null">
+                last_edit_time=#{lastEditTime}
+            </if>
+        </set>
+        where area_id=#{areaId}
+    </update>
+</mapper>

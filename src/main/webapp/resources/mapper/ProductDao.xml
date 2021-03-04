@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.4//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaweb.clothingstore.dao.ProductDao">
+    <resultMap id="productMap" type="com.javaweb.clothingstore.entity.Product">
+        <id  column="product_id" property="productId"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_desc" property="productDesc"/>
+        <result column="img_addr" property="imgAddr"/>
+        <result column="normal_price" property="normalPrice"/>
+        <result column="promotion_price" property="promotionPrice"/>
+        <result column="priority" property="priority"/>
+        <result column="create_time" property="createTime"/>
+        <result column="last_edit_time" property="lastEditTime"/>
+        <result column="enable_status" property="enableStatus"/>
+        <association property="productBrand" column="product_brand_id"
+                     javaType="com.javaweb.clothingstore.entity.ProductBrand">
+            <id property="productBrandId" column="product_brand_id"/>
+            <result property="productBrandName" column="product_brand_name"/>
+        </association>
+        <association property="productCategory" column="product_category_id"
+                     javaType="com.javaweb.clothingstore.entity.ProductCategory">
+            <id property="productCategoryId" column="product_category_id"/>
+            <result property="productCategoryName" column="product_category_name"/>
+        </association>
+        <association property="shop" column="shop_id"
+                     javaType="com.javaweb.clothingstore.entity.Shop">
+            <id property="shopId" column="shop_id"/>
+            <result property="ownerId" column="owner_id"/>
+            <result property="shopName" column="shop_name"/>
+        </association>
+        <collection property="productImgList" column="product_id"
+                    ofType="com.javaweb.clothingstore.entity.ProductImg">
+            <id column="product_img_id" property="productImgId"/>
+            <result column="detail_img" property="imgAddr"/>
+            <result column="img_desc" property="imgDesc"/>
+            <result column="priority" property="priority"/>
+            <result column="create_time" property="createTime"/>
+            <result column="product_id" property="productId"/>
+        </collection>
+    </resultMap>
+
+    <select id="queryProductList" resultMap="productMap" parameterType="com.javaweb.clothingstore.entity.Product">
+        select
+        product_id,
+        product_name,
+        product_desc,
+        img_addr,
+        normal_price,
+        promotion_price,
+        priority,
+        create_time,
+        last_edit_time,
+        enable_status,
+        product_category_id,
+        shop_id
+        from tb_product
+        <where>
+            <if test="productCondition.shop!=null
+            and productCondition.shop.shopId!=null">
+                and shop_id=#{productCondition.shop.shopId}
+            </if>
+            <if test="productCondition.productBrand!=null
+           and productCondition.productBrand.productBrandId">
+                and product_brand_id=#{productCondition.productBrand.productBrandId}
+            </if>
+            <if test="productCondition.productCategory!=null
+           and productCondition.productCategory.productCategoryId">
+                and product_category_id=#{productCondition.productCategory.productCategoryId}
+            </if>
+            <if test="productCondition.productName!=null">
+                and product_name like '%${productCondition.productName}%'
+            </if>
+            <if test="productCondition.enableStatus!=null">
+                and enable_status=#{productCondition.enableStatus}
+            </if>
+        </where>
+        order by
+        priority desc
+        LIMIT #{rowIndex},#{pageSize};
+    </select>
+    
+    <select id="queryProductCount" resultType="int">
+        SELECT count(1) from tb_product
+        <where>
+            <if test="productCondition.shop!=null
+               and productCondition.shop.shopId!=null">
+                and shop_id=#{productCondition.shop.shopId}
+            </if>
+            <if test="productCondition.productBrand!=null
+           and productCondition.productBrand.productBrandId">
+                and product_brand_id=#{productCondition.productBrand.productBrandId}
+            </if>
+            <if test="productCondition.productCategory!=null
+                and productCondition.productCategory.productCategoryId">
+                and product_category_id=
+                #{productCondition.productCategory.productCategoryId}
+            </if>
+            <if test="productCondition.productName!=null">
+                and product_name like '%${productCondition.productName}%'
+            </if>
+            <if test="productCondition.enableStatus!=null">
+                and enable_status=#{productCondition.enableStatus}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryByProductId" resultMap="productMap" parameterType="Long">
+            select
+            p.product_id,
+            p.product_name,
+            p.product_desc,
+            p.img_addr,
+            p.normal_price,
+            p.promotion_price,
+            p.priority,
+            p.create_time,
+            p.last_edit_time,
+            p.enable_status,
+            p.product_brand_id,
+            p.product_category_id,
+            p.shop_id,
+            pm.product_img_id,
+            pm.img_addr as detail_img,
+            pm.img_desc,
+            pm.priority,
+            pm.create_time
+            from
+            tb_product p
+            left join
+            tb_product_img pm
+            on
+            p.product_id=
+            pm.product_id
+            where
+            p.product_id=
+            #{productId}
+            order by
+            pm.priority desc
+    </select>
+    
+    <insert id="insertProduct" parameterType="com.javaweb.clothingstore.entity.Product"
+    useGeneratedKeys="true" keyProperty="productId" keyColumn="product_id">
+        insert into
+        tb_product(product_name,product_desc,img_addr,normal_price
+        ,promotion_price,priority,create_time,last_edit_time,enable_status
+        ,product_brand_id,product_category_id,shop_id)
+        values (
+        #{productName},#{productDesc},#{imgAddr},
+        #{normalPrice},#{promotionPrice},#{priority},
+        #{createTime},#{lastEditTime},#{enableStatus},
+        #{productBrand.productBrandId},
+        #{productCategory.productCategoryId},
+        #{shop.shopId}
+        )
+    </insert>
+
+    <update id="updateProduct" parameterType="com.javaweb.clothingstore.entity.Product"
+    keyProperty="product_id" useGeneratedKeys="true">
+        update tb_product
+        <set>
+            <if test="productName!=null">product_name=#{productName},</if>
+            <if test="productDesc!=null">product_desc=#{productDesc},</if>
+            <if test="imgAddr!=null">img_addr=#{imgAddr},</if>
+            <if test="normalPrice!=null">normal_price=#{normalPrice},</if>
+            <if test="promotionPrice!=null">promotion_price=#{promotionPrice},</if>
+            <if test="priority!=null">priority=#{priority},</if>
+            <if test="lastEditTime!=null">last_edit_time=#{lastEditTime},</if>
+            <if test="enableStatus!=null">enable_status=#{enableStatus},</if>
+            <if test="productBrand!=null
+            and productBrand.productBrandId!=null">
+                product_brand_id=#{productBrand.productBrandId},
+            </if>
+            <if test="productCategory!=null
+            and productCategory.productCategoryId!=null">
+                product_category_id=#{productCategory.productCategoryId}
+            </if>
+        </set>
+        where product_id=#{productId}
+        and shop_id=#{shop.shopId}
+    </update>
+    
+
+</mapper>

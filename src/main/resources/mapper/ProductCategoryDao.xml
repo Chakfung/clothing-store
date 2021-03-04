@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.4//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaweb.clothingstore.dao.ProductCategoryDao">
+    <resultMap id="productCategoryMap" type="com.javaweb.clothingstore.entity.ProductCategory">
+        <id column="product_category_id" property="productCategoryId"/>
+        <result column="product_category_name" property="productCategoryName"/>
+        <result column="product_category_img" property="productCategoryImg"/>
+        <result column="priority" property="priority"/>
+        <result column="create_time" property="createTime"/>
+        <result column="last_edit_time" property="lastEditTime"/>
+        <association property="parent" column="parent_id" javaType="com.javaweb.clothingstore.entity.ProductCategory">
+            <id column="parent_id" property="productCategoryId"/>
+        </association>
+    </resultMap>
+    <select id="queryProductCategory" resultMap="productCategoryMap">
+        select
+        product_category_id,
+        product_category_name,
+        product_category_img,
+        priority,
+        create_time,
+        last_edit_time,
+        parent_id
+        from
+        tb_product_category
+        <where>
+            <if test="productCategoryCondition==null">
+                and parent_id is  null
+            </if>
+            <if test="productCategoryCondition!=null">
+                and parent_id is not null
+            </if>
+            <if test="productCategoryCondition!=null and productCategoryCondition.parent!=null">
+                and parent_id=#{productCategoryCondition.parent.productCategoryId}
+            </if>
+        </where>
+        order by
+        priority desc
+    </select>
+
+    <insert id="batchInsertProductCategory" parameterType="java.util.List" useGeneratedKeys="true">
+        insert into
+        tb_product_category(product_category_name,priority,create_time,last_edit_time,parent_id)
+        values
+        <foreach collection="list" item="pc" index="index" separator=",">
+            (#{pc.productCategoryName}
+            ,#{pc.priority}
+            ,#{pc.createTime}
+            ,#{pc.lastEditTime}
+            ,#{pc.parent.productCategoryId}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteProductCategoryById" parameterType="java.lang.Long">
+        delete from tb_product_category where product_category_id=#{productCategoryId}
+    </delete>
+
+    <update id="updateProductCategory" parameterType="com.javaweb.clothingstore.entity.ProductCategory">
+        update tb_product_category
+        <set>
+            <if test="productCategoryName!=null">
+                product_category_name=#{productCategoryName}
+            </if>
+            <if test="productCategoryImg!=null">
+                product_category_img=#{productCategoryImg}
+            </if>
+            <if test="priority!=null">
+                priority=#{priority}
+            </if>
+            <if test="lastEditTime!=null">
+                last_edit_time=#{lastEditTime}
+            </if>
+        </set>
+        where product_category_id=#{productCategoryId}
+    </update>
+</mapper>

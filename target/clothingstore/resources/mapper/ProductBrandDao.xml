@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.4//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaweb.clothingstore.dao.ProductBrandDao">
+    <resultMap id="productBrandMap" type="com.javaweb.clothingstore.entity.ProductBrand">
+        <id column="product_brand_id" property="productBrandId" />
+        <result column="product_brand_name" property="productBrandName" />
+        <result column="priority" property="priority" />
+        <result column="create_time" property="createTime" />
+        <result property="shopId" column="shop_id"/>
+    </resultMap>
+    <select id="queryProductBrandList"  resultMap="productBrandMap">
+        select *
+        from tb_product_brand
+        <where>
+            <if test="shopId!=null">
+                and shop_id=#{shopId}
+            </if>
+        </where>
+        order by priority desc
+    </select>
+
+    <insert id="batchInsertProductBrand" parameterType="java.util.List">
+        insert into
+        tb_product_brand(product_brand_name,priority,create_time,shop_id)
+        values
+        <foreach collection="list" item="productBrand" index="index" separator=",">
+            (
+            #{productBrand.productBrandName}
+            ,#{productBrand.priority}
+            ,#{productBrand.createTime}
+            ,#{productBrand.shopId}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteProductBrand">
+        delete from
+        tb_product_brand
+        where
+        product_brand_id=#{productBrandId}
+        and shop_id=#{shopId}
+    </delete>
+</mapper>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.4//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaweb.clothingstore.dao.HeadLineDao">
+    <resultMap id="headlineMap" type="com.javaweb.clothingstore.entity.HeadLine">
+        <id column="line_id" property="lineId"/>
+        <result column="line_link" property="lineLink"/>
+        <result column="line_img" property="lineImg"/>
+        <result column="poster1" property="poster1"/>
+        <result column="poster2" property="poster2"/>
+        <result column="priority" property="priority"/>
+        <result column="enable_status" property="enableStatus"/>
+        <result column="create_time" property="createTime"/>
+        <result column="last_edit_time" property="lastEditTime"/>
+        <association property="shop"  javaType="com.javaweb.clothingstore.entity.Shop">
+            <id column="shop_id" property="shopId"/>
+            <result column="shop_name" property="shopName"/>
+        </association>
+    </resultMap>
+    <select id="queryHeadLine" resultMap="headlineMap">
+        select
+        hl.line_id,
+        hl.shop_id,
+        hl.line_link,
+        hl.line_img,
+        hl.poster1,
+        hl.poster2,
+        hl.priority,
+        hl.enable_status,
+        hl.create_time,
+        hl.last_edit_time,
+        s.shop_id,
+        s.shop_name
+        from
+        tb_head_line hl
+        left join
+        tb_shop s
+        on hl.shop_id=s.shop_id
+        <where>
+            <if test="headLineCondition.enableStatus!=null">
+                and hl.enable_status=#{headLineCondition.enableStatus}
+            </if>
+        </where>
+        order by
+        priority desc
+        <if test="rowIndex>=0 and pageSize>0 ">
+        LIMIT #{rowIndex},#{pageSize}
+        </if>
+    </select>
+
+    <select id="queryHeadLIneById" parameterType="java.lang.Long" resultMap="headlineMap">
+        select
+        hl.line_id,
+        hl.shop_id,
+        hl.line_link,
+        hl.line_img,
+        hl.poster1,
+        hl.poster2,
+        hl.priority,
+        hl.enable_status,
+        hl.create_time,
+        hl.last_edit_time,
+        s.shop_id,
+        s.shop_name
+        from
+        tb_head_line hl
+        left join
+        tb_shop s
+        on hl.shop_id=s.shop_id
+        where hl.line_id=${lineId}
+    </select>
+
+    <insert id="insertHeadLine" parameterType="com.javaweb.clothingstore.entity.HeadLine"
+            useGeneratedKeys="true">
+        insert into tb_head_line(shop_id,line_link,line_img,poster1,poster2,priority,
+        enable_status,create_time,last_edit_time)
+        values (#{shop.shopId},#{lineLink},#{lineImg},#{poster1},#{poster2},#{priority},
+        #{enableStatus},#{createTime},#{lastEditTime});
+
+    </insert>
+    
+    <update id="updateHeadLine" parameterType="com.javaweb.clothingstore.entity.HeadLine">
+        update tb_head_line
+        <set>
+            <if test="shop!=null and shop.shopId!=null">
+                shop_id=#{shop.shopId},
+            </if>
+            <if test="lineLink!=null">
+            line_link=#{lineLink},
+            </if>
+            <if test="lineImg!=null">
+                line_img=#{lineImg},
+            </if>
+            <if test="poster1!=null">
+                poster1=#{poster1},
+            </if>
+            <if test="poster2!=null">
+                poster2=#{poster2},
+            </if>
+            <if test="priority!=null">
+                priority=#{priority},
+            </if>
+            <if test="enableStatus!=null">
+                enable_status=#{enableStatus},
+            </if>
+            <if test="lastEditTime!=null">
+                last_edit_time=#{lastEditTime}
+            </if>
+        </set>
+        where line_id=#{lineId}
+    </update>
+
+    <delete id="deleteHeadLine" parameterType="java.lang.Long">
+        delete from
+        tb_head_line
+        where line_id=#{lineId}
+    </delete>
+</mapper>
